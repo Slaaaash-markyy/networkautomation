@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Router Diagnostics | Cyber Lab</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    background: #0a0f0a;
+    color: #e0ffe0;
+    display: flex;
+    min-height: 100vh;
+    background-image: 
+      linear-gradient(rgba(0, 255, 100, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 100, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 280px;
+    background: rgba(10, 20, 10, 0.95);
+    border-right: 1px solid #00ff66;
+    padding: 30px 22px;
+    min-height: 100vh;
+    box-shadow: 0 0 30px rgba(0, 255, 100, 0.15);
+    position: relative;
+  }
+
+  .sidebar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #00ff66, #00ccff);
+    box-shadow: 0 0 15px #00ff66;
+  }
+
+  .sidebar h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    line-height: 1.2;
+    color: #00ff66;
+    text-shadow: 0 0 12px #00ff66;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: #66ff99;
+    margin-bottom: 32px;
+    opacity: 0.8;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: bold;
+    margin: 22px 0 10px;
+    color: #00ccff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* Device Card */
+  .device-card {
+    background: rgba(0, 30, 15, 0.6);
+    border: 1px solid #00ff66;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 0 12px rgba(0, 255, 100, 0.2);
+  }
+
+  .device-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(0, 255, 100, 0.15);
+    font-size: 12px;
+  }
+
+  .device-row:last-child {
+    border-bottom: none;
+  }
+
+  .device-row span {
+    color: #66ff99;
+  }
+
+  .device-row strong {
+    color: #ffffff;
+    text-shadow: 0 0 6px #00ff66;
+  }
+
+  /* Command List */
+  .command-list {
+    background: rgba(0, 30, 15, 0.6);
+    border: 1px solid #00ff66;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 0 12px rgba(0, 255, 100, 0.15);
+  }
+
+  .command-list div {
+    padding: 11px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 255, 100, 0.12);
+    color: #ccffdd;
+  }
+
+  .command-list div:last-child {
+    border-bottom: none;
+  }
+
+  /* Button */
+  .run-button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    border: 1px solid #00ff66;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #003311, #005522);
+    color: #00ff66;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-shadow: 0 0 8px #00ff66;
+    box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+  }
+
+  .run-button:hover {
+    background: linear-gradient(135deg, #004422, #007733);
+    box-shadow: 0 0 25px rgba(0, 255, 100, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .run-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .status {
+    text-align: center;
+    font-size: 12px;
+    color: #00ffaa;
+    margin-top: 12px;
+    text-shadow: 0 0 8px #00ff66;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    flex: 1;
+    padding: 30px 40px;
+  }
+
+  .main-content h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 26px;
+    margin-bottom: 24px;
+    color: #00ff66;
+    text-shadow: 0 0 15px #00ff66;
+    letter-spacing: 2px;
+  }
+
+  /* Result Boxes */
+  .result-box {
+    background: rgba(5, 20, 10, 0.8);
+    border: 1px solid #00ff66;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 255, 100, 0.15);
+  }
+
+  .result-header {
+    width: 100%;
+    background: rgba(0, 40, 20, 0.6);
+    border: none;
+    text-align: left;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #00ff66;
+    font-family: 'Share Tech Mono', monospace;
+    transition: background 0.2s;
+  }
+
+  .result-header:hover {
+    background: rgba(0, 60, 30, 0.7);
+  }
+
+  .result-header span {
+    margin-left: 8px;
+    color: #ccffdd;
+  }
+
+  .arrow {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    color: #00ff66;
+  }
+
+  .result-box.active .arrow {
+    transform: rotate(90deg);
+  }
+
+  .result-output {
+    display: none;
+    padding: 18px;
+    background: #020805;
+    border-top: 1px solid rgba(0, 255, 100, 0.3);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: #88ffaa;
+    text-shadow: 0 0 4px rgba(0, 255, 100, 0.4);
+  }
+
+  .result-box.active .result-output {
+    display: block;
+  }
+
+  .footer {
+    margin-top: 40px;
+    font-size: 12px;
+    color: #44aa66;
+    opacity: 0.7;
+  }
+
+  /* Responsive */
+  @media screen and (max-width: 700px) {
+    body {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      min-height: auto;
+    }
+    .main-content {
+      padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h1>ROUTER<br>DIAGNOSTIC</h1>
+  <p class="subtitle">CISCO ROUTER VIRTUAL LAB</p>
+
+  <h3 class="section-title">Device</h3>
+  <div class="device-card">
+    <div class="device-row">
+      <span>Address</span>
+      <strong>192.168.10.122</strong>
+    </div>
+    <div class="device-row">
+      <span>Port</span>
+      <strong>32770</strong>
+    </div>
+    <div class="device-row">
+      <span>Protocol</span>
+      <strong>Telnet</strong>
+    </div>
+  </div>
+
+  <h3 class="section-title">Commands to run</h3>
+  <div class="command-list">
+    <div>show version</div>
+    <div>show ip interface brief</div>
+    <div>show running-config</div>
+  </div>
+
+  <button class="run-button" id="runButton">
+    RUN DIAGNOSTICS
+  </button>
+
+  <p class="status" id="status">Ready to run</p>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <h2>RESULTS</h2>
+
+  <div class="result-box" id="result1">
+    <button class="result-header" onclick="toggleResult('result1')">
+      <span class="arrow">▶</span>
+      <span>show version</span>
+    </button>
+    <pre class="result-output" id="output1">Click RUN DIAGNOSTICS to display the result.</pre>
+  </div>
+
+  <div class="result-box" id="result2">
+    <button class="result-header" onclick="toggleResult('result2')">
+      <span class="arrow">▶</span>
+      <span>show ip interface brief</span>
+    </button>
+    <pre class="result-output" id="output2">Click RUN DIAGNOSTICS to display the result.</pre>
+  </div>
+
+  <div class="result-box" id="result3">
+    <button class="result-header" onclick="toggleResult('result3')">
+      <span class="arrow">▶</span>
+      <span>show running-config</span>
+    </button>
+    <pre class="result-output" id="output3">Click RUN DIAGNOSTICS to display the result.</pre>
+  </div>
+
+  <p class="footer">
+    // ROUTER DIAGNOSTICS SYSTEM | EVE-NG VIRTUAL LAB //
+  </p>
+</div>
+
+<script>
+  function toggleResult(id) {
+    document.getElementById(id).classList.toggle("active");
+  }
+
+  document.getElementById("runButton").addEventListener("click", runDiagnostics);
+
+  function runDiagnostics() {
+    const button = document.getElementById("runButton");
+    const status = document.getElementById("status");
+
+    button.disabled = true;
+    button.textContent = "EXECUTING...";
+    status.textContent = "Connecting to router...";
+
+    setTimeout(function() {
+      document.getElementById("output1").textContent =
+`Cisco IOS Software, Virtual Lab Router
+
+Router Name: LAB-R1
+System uptime: 2 hours, 14 minutes
+
+Cisco IOS Software
+Version: 15.9
+
+Router Model: Cisco IOSv
+Memory: 512 MB
+
+System image file:
+flash:/vios-adventerprisek9-m.spa
+
+Diagnostic Status: SUCCESS`;
+
+      document.getElementById("output2").textContent =
+`Interface              IP-Address      Status       Protocol
+
+GigabitEthernet0/0     192.168.10.1    up           up
+GigabitEthernet0/1     192.168.20.1    up           up
+GigabitEthernet0/2     unassigned      down         down
+Loopback0              10.10.10.1      up           up`;
+
+      document.getElementById("output3").textContent =
+`Building configuration...
+
+Current configuration:
+
+hostname LAB-R1
+
+interface GigabitEthernet0/0
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/2
+ shutdown
+
+interface Loopback0
+ ip address 10.10.10.1 255.255.255.255
+
+end`;
+
+      // Open all results
+      document.getElementById("result1").classList.add("active");
+      document.getElementById("result2").classList.add("active");
+      document.getElementById("result3").classList.add("active");
+
+      status.textContent = "3 commands completed successfully";
+      button.disabled = false;
+      button.textContent = "RUN DIAGNOSTICS";
+    }, 1800);
+  }
+</script>
+
+</body>
+</html>
